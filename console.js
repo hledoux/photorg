@@ -22,16 +22,15 @@ var cs_console_trace_prefix_warning = '!!! WARNING !!! ';
 //  - Last modification : Fri Jan 24 11:48:27 2014 - Herve Ledoux (carbone20)
 // ********************************************************************
 module.exports.f_console_info = function f_console_info(
-  ...pa_msh_parts)
+    ...pa_msh_parts)
 {
-
 
   if ((! _go_console_window) ||
       (_go_console_window.closed))
 
 
-  // Collect and concatenate all the extra arguments into a single
-  // string
+    // Collect and concatenate all the extra arguments into a single
+    // string
   {
     var li_ArgNo = f_console_info.length;
     var li_ArgC = arguments.length;
