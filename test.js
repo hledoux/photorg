@@ -16,17 +16,17 @@ const {
 } = require("./console");
 
 
-f_console_info("hello");
 
-f_console_inspect({
+f_console_info('this is an info');
+f_console_alert('this is an alert');
+f_console_error('this is an error');
+f_console_fatal('this is a fatal');
+
+
+f_console_inspect("hello", {
   "f_is_false(yes)" : f_is_false("yes"),
   "f_is_false(no)" : f_is_false("no"),
   "f_is_false(true)" : f_is_false("true"),
   "f_is_false(false)" : f_is_false("false"),
 });
 
-
-f_console_info('this is an info');
-f_console_alert('this is an alert');
-f_console_error('this is an error');
-f_console_fatal('this is a fatal');
