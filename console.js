@@ -1,12 +1,157 @@
 
-"use strict";
+
+const cs_console_trace_prefix_alert = '!!! ALERT !!! ';
+const cs_console_trace_prefix_error = '!!! ERROR !!! ';
+const cs_console_trace_prefix_fatal = '!!! FATAL !!! ';
+const cs_console_trace_prefix_warning = '!!! WARNING !!! ';
 
 
-let cs_console_trace_prefix_alert = '!!! ALERT !!! ';
-let cs_console_trace_prefix_error = '!!! ERROR !!! ';
-let cs_console_trace_prefix_fatal = '!!! FATAL !!! ';
-let cs_console_trace_prefix_warning = '!!! WARNING !!! ';
+// global console - initialized on-the-fly
+let _go_console = null;
 
+
+
+// ********************************************************************
+//  FUNCTION DESCRIPTION :
+//  -
+//  ARGUMENTS :
+//  -
+//  RETURN VALUE :
+//  -
+//  HISTORY :
+//  - Creation          : Sun Jan 21 18:06:39 2018 - LEDOUX Herve
+//  - Last modification : Sun Jan 21 18:06:39 2018 - LEDOUX Herve
+// ********************************************************************
+function _f_get_console() {
+  if (! _go_console) {
+    _go_console = {
+      _ab_already_in_callback: false,
+      _ab_is_child_console: false,
+      _ab_shell_context: false,
+      _ab_silent: false,
+      _ab_timestamp: true,
+
+      _af_callback: null,
+      _af_filter: null, // ##TODO##
+
+
+      _ai_callback_calls: 0,
+      _ai_count_alerts: 0,
+      _ai_count_errors: 0,
+      _ai_count_warnings: 0,
+
+      _ai_indent_level: 0, // ##TODO##
+
+      _as_indent_prefix: "",
+      _as_running_pid: null, // ##TODO##
+      _as_trace_context: "",
+
+
+      // Detect repetition of the last message - automatic detection of infinite
+      // loops...
+      _ai_last_msg_count: 0,
+      _as_last_msg_value: null,
+    };
+
+    _f_config_load(); // ##TODO##
+    _f_init_debug_pkg(); // ##TODO##
+  }
+
+  return(_go_console);
+}
+
+
+// ********************************************************************
+//  FUNCTION DESCRIPTION :
+//  -
+//  ARGUMENTS :
+//  -
+//  RETURN VALUE :
+//  -
+//  HISTORY :
+//  - Creation          : Sun Jan 21 17:47:20 2018 - LEDOUX Herve
+//  - Last modification : Sun Jan 21 17:47:20 2018 - LEDOUX Herve
+// ********************************************************************
+function _f_config_compile(ph_opts) {
+
+  let lo_console = _f_get_console();
+
+  // special shell-mode [pb_shell_context] ?
+  lo_console._ab_shell_context = (!! ph_opts.pb_shell_context);
+  if (lo_console._ab_shell_context) {
+    lo_console._as_indent_prefix = "";
+  }
+
+
+  // [pb_silent] ?
+  lo_console._ab_silent = (!! ph_opts.pb_silent);
+
+
+  // [pb_timestamp]
+  lo_console._ab_timestamp = (!! ph_opts.pb_timestamp);
+
+
+  // branch [_af_callback] => [pf_callback]
+  lo_console._af_callback = ph_opts.pf_callback;
+
+
+  // ps_trace_context
+  lo_console._as_trace_context = (ph_opts.ps_trace_context ? ph_opts.ps_trace_context : "");
+
+
+  // [ps_shorten_filenames_with_prefix] Special processing of long filenames embedded in traces ?
+  {
+    my $ls_shorten_filenames_with_prefix = $po_This->_m_get_config_setting('ps_shorten_filenames_with_prefix');
+
+    if ($ls_shorten_filenames_with_prefix) {
+      // be sure the prefix ends with a trailing slash /
+      unless ($ls_shorten_filenames_with_prefix =~ m{\/\z}) {
+        $ls_shorten_filenames_with_prefix = qq($ls_shorten_filenames_with_prefix/);
+      }
+
+      $ls_shorten_filenames_with_prefix = quotemeta($ls_shorten_filenames_with_prefix);
+
+      // Dynamically create a sub-routine to reduce the messages
+      $po_This->{_af_filter} = eval(qq{
+        my \$lf_filter = sub {
+          my \$ps_msg = shift();
+          if (defined(\$ps_msg)) {
+            \$ps_msg =~ s{$ls_shorten_filenames_with_prefix}{}sgo;
+          }
+          return(\$ps_msg);
+        };
+      });
+    }
+
+    else {
+      $po_This->{_af_filter} = undef;
+    }
+  }
+
+  // Push the config into the environment, in order to share with the potential
+  // child processes
+  _m_config_share();
+}
+
+
+// ********************************************************************
+//  FUNCTION DESCRIPTION :
+//  -
+//  ARGUMENTS (hash):
+//  - pb_silent: shut-up !
+//  - pb_timestamp: prefix each trace with a time-stamp
+//  - pf_callback: sub / call-back to call for each trace
+//  - ps_shorten_filenames_with_prefix: reduce in the traces the long files names beginning like
+//  - ps_trace_context: systematically prefix any trace ejected by the console with the given value
+//  RETURN VALUE :
+//  -
+//  HISTORY :
+//  - Creation          : Sun Jan 21 17:37:05 2018 - LEDOUX Herve
+//  - Last modification : Sun Jan 21 17:37:05 2018 - LEDOUX Herve
+// ********************************************************************
+function f_console_configure(ph_opts) {
+  _f_config_compile(ph_opts);
+}
 
 
 
