@@ -3,18 +3,11 @@
 "use strict";
 
 const { f_is_false } = require("./string");
+const { f_console_info, f_console_inspect } = require("./console");
 
-console.inspect = function inspect (ph_args) {
-  console.log(gm_util.inspect(ph_args, {
-    showHidden: true,
-    depth: null
-  }));
-}
+f_console_info("hello");
 
-
-console.info("hello");
-
-console.inspect({
+f_console_inspect({
   "f_is_false(yes)" : f_is_false("yes"),
   "f_is_false(no)" : f_is_false("no"),
   "f_is_false(true)" : f_is_false("true"),

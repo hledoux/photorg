@@ -2,10 +2,10 @@
 "use strict";
 
 
-var cs_console_trace_prefix_alert = '!!! ALERT !!! ';
-var cs_console_trace_prefix_error = '!!! ERROR !!! ';
-var cs_console_trace_prefix_fatal = '!!! FATAL !!! ';
-var cs_console_trace_prefix_warning = '!!! WARNING !!! ';
+let cs_console_trace_prefix_alert = '!!! ALERT !!! ';
+let cs_console_trace_prefix_error = '!!! ERROR !!! ';
+let cs_console_trace_prefix_fatal = '!!! FATAL !!! ';
+let cs_console_trace_prefix_warning = '!!! WARNING !!! ';
 
 
 
@@ -21,193 +21,64 @@ var cs_console_trace_prefix_warning = '!!! WARNING !!! ';
 //  - Creation          : Mon Sep 24 06:31:19 2007 - Herve LEDOUX on carbone14
 //  - Last modification : Fri Jan 24 11:48:27 2014 - Herve Ledoux (carbone20)
 // ********************************************************************
-module.exports.f_console_info = function f_console_info(
-    ...pa_msh_parts)
-{
-
-  if ((! _go_console_window) ||
-      (_go_console_window.closed))
-
-
-    // Collect and concatenate all the extra arguments into a single
-    // string
-  {
-    var li_ArgNo = f_console_info.length;
-    var li_ArgC = arguments.length;
-    while (li_ArgNo < li_ArgC) {
-      ps_msg += arguments[li_ArgNo++];
-    }
-  }
-
-  var lo_log_timestamp = _go_console_window.document.createElement('span');
-  lo_log_timestamp.className = 'CssDbgLogTimStp';
-  lo_log_timestamp.innerHTML = '[' + f_format_date_YYYYMMDDhhmmssms(null, '-', ':', ' ') + ']';
-
-  var lo_log_payload = _go_console_window.document.createElement('pre');
-  lo_log_payload.className = 'CssDbgLogPayload';
-  $(lo_log_payload).text(ps_msg);
-
-  var lo_log_rec = _go_console_window.document.createElement('div');
-  lo_log_rec.className = 'CssDbgLogRec';
-  lo_log_rec.appendChild(lo_log_timestamp);
-  lo_log_rec.appendChild(lo_log_payload);
-
-  _go_console_window.document.body.appendChild(lo_log_rec);
-
-  // auto-scroll
-  _go_console_window.scroll(0, f_max(_go_console_window.document.body.scrollHeight,
-                                     _go_console_window.document.body.offsetHeight,
-                                     _go_console_window.document.documentElement.clientHeight,
-                                     _go_console_window.document.documentElement.scrollHeight,
-                                     _go_console_window.document.documentElement.offsetHeight));
+function f_console_info(...pa_var_args) {
+  console.info(pa_var_args.map(function (po_one_arg) {
+    return(po_one_arg.toString());
+  }).join(''));
 }
 
 
-// A special version of [f_console_info(...)], able to process any type of data
-function f_console_inspect() {
-  "use strict";
 
-  var lf_process_one_arg = function(po_arg) {
+// A special version of [f_console_info(...)], able to process any type of data
+function f_console_inspect(...pa_var_args) {
+  f_console_info(pa_var_args.map(function(po_one_arg) {
     // [null]
-    if (po_arg === null) {
+    if (po_one_arg === null) {
       return('-null-');
     }
 
     // [undefined]
-    if (po_arg === undefined) {
+    if (po_one_arg === undefined) {
       return('-undefined-');
     }
 
-    // XML document
-    if ((po_arg) &&
-        (po_arg.XMLDocument) &&
-        (po_arg.XMLDocument.documentElement)) {
-      var lo_dom_status=new c_dom_status(po_arg);
-      var ls_xml=f_dom_dso_to_str(po_arg);
-
-      // check status
-      return(f_JoinNonEmptyVals('',
-                                'Status:',
-                                '\n',
-                                'level=', lo_dom_status.level,
-                                '\n',
-                                'mnemonic=', lo_dom_status.mnemonic,
-                                '\n',
-                                'message=', lo_dom_status.message,
-                                '\n',
-                                'rowcount=', lo_dom_status.row_count,
-                                '\n',
-                                'query_duration_ms=', lo_dom_status.query_duration_ms,
-                                ls_xml));
-    }
-
-
     // standard object that can be stringified with JSON
-    if (window.JSON) {
-      return(JSON.stringify(po_arg, null, 2));
-    }
-
-
-    // ultimate default case
-    return(po_arg.toString());
-  };
-
-
-  var la_fragments = [];
-
-  // consume the arguments one by one
-  var li_ArgNo = 0;
-  var li_ArgC = arguments.length;
-  while (li_ArgNo < li_ArgC) {
-    la_fragments.push(lf_process_one_arg(arguments[li_ArgNo++]));
-  }
-
-  f_console_info(f_JoinNonEmptyVals(' ', la_fragments));
+    return(JSON.stringify(po_one_arg, null, 2));
+  }, pa_var_args).join(' '));
 }
 
 
-function f_console_warning() {
-  "use strict";
-
-  var la_info_args = [ cs_console_trace_prefix_warning ].concat(Array.prototype.slice.call(arguments));
-  f_console_info.apply(f_console_info, la_info_args);
+function f_console_warning(...pa_var_args) {
+  f_console_info.apply(f_console_info, [ cs_console_trace_prefix_warning ].concat(pa_var_args));
 }
 
 
-function f_console_alert() {
-  "use strict";
-
-  var la_info_args = [ cs_console_trace_prefix_alert ].concat(Array.prototype.slice.call(arguments));
-  f_console_info.apply(f_console_info, la_info_args);
+function f_console_alert(...pa_var_args) {
+  f_console_info.apply(f_console_info, [ cs_console_trace_prefix_alert ].concat(pa_var_args));
 }
 
 
-function f_console_error() {
-  "use strict";
-
-  var la_info_args = [ cs_console_trace_prefix_error ].concat(Array.prototype.slice.call(arguments));
-  f_console_info.apply(f_console_info, la_info_args);
+function f_console_error(...pa_var_args) {
+  f_console_info.apply(f_console_info, [ cs_console_trace_prefix_error ].concat(pa_var_args));
 }
 
 
-function f_console_security_issue() {
-  "use strict";
-
-  var la_info_args = [ '##SECURITY## ' ].concat(Array.prototype.slice.call(arguments));
-
-  // this call to [alert(...)] is intentional, in order to avoid HTML
-  // or JS injection - do NOT replace by [f_alert(...)] or any other
-  // mean leading to a HTML rendering
-  alert(la_info_args.join(''));
+function f_console_security_issue(...pa_var_args) {
+  f_console_error.apply(f_console_error, [ '##SECURITY## ' ].concat(pa_var_args));
 }
 
 
-function f_console_fatal() {
-  "use strict";
-
-  var la_info_args = [ cs_console_trace_prefix_fatal ].concat(Array.prototype.slice.call(arguments));
-  f_console_info.apply(f_console_info, la_info_args);
-
-  // no way to stop execution...
+function f_console_fatal(...pa_var_args) {
+  f_console_info.apply(f_console_info, [ cs_console_trace_prefix_fatal ].concat(pa_var_args));
 }
 
 
-function f_console_assert(
-  pb_check_condition) {
-  "use strict";
-
+function f_console_assert(pb_check_condition, ...pa_var_args) {
   if (! pb_check_condition) {
-    var la_info_args = [ 'assertion failed ' ].concat(Array.prototype.slice.call(arguments, f_console_assert.length));
-    f_console_error.apply(f_console_error, la_info_args);
+    f_console_error.apply(f_console_error, [ 'assertion failed ' ].concat(pa_var_args));
   }
 
   return(pb_check_condition);
-}
-
-
-
-// ********************************************************************
-//  FUNCTION DESCRIPTION :
-//  - Dump the current JavaScript call-stack
-//  ARGUMENTS :
-//  -
-//  RETURN VALUE :
-//  -
-//  HISTORY :
-//  - Creation          : Mon Jun 15 07:19:46 2009 - Herve LEDOUX on carbone14
-//  - Last modification : Thu Sep 22 09:43:35 2016 - Herve Ledoux on xnms-ldev
-// ********************************************************************
-function f_console_dump_call_stack(
-  pb_display_it,
-  ps_intro_message) {
-  "use strict";
-
-  var ls_dump = '';
-
-  // in strict mode, it is no longer possible to inspect the call-stack...
-  f_console_error('Attempt to dump the call-stack - impossible');
-
-  return(ls_dump);
 }
 
 
@@ -220,9 +91,7 @@ function f_console_block(ps_message, pf_sub_to_exec) {
 }
 
 
-function _f_console_NOT_IMPLEMENTED(
-  ps_method,
-  pb_silent) {
+function _f_console_NOT_IMPLEMENTED(ps_method, pb_silent) {
   if (! pb_silent) {
     f_console_error('call to API [', ps_method, '] - NOT IMPLEMENTED');
   }
@@ -286,7 +155,7 @@ function f_console_debug_chrono() {
 function f_console_lib_self_test() {
   "use strict";
 
-  var lo_complex_object = {
+  let lo_complex_object = {
     a: 'this',
     b: 'is',
     c: 'a',
@@ -307,4 +176,30 @@ function f_console_lib_self_test() {
 
 
 
-export
+// exports
+module.exports.f_console_OUTGOING_CNX = f_console_OUTGOING_CNX;
+module.exports.f_console_alert = f_console_alert;
+module.exports.f_console_assert = f_console_assert;
+module.exports.f_console_block = f_console_block;
+module.exports.f_console_configure = f_console_configure;
+module.exports.f_console_debug_chrono = f_console_debug_chrono;
+module.exports.f_console_debug_pkg = f_console_debug_pkg;
+module.exports.f_console_dump_stats = f_console_dump_stats;
+module.exports.f_console_error = f_console_error;
+module.exports.f_console_fatal = f_console_fatal;
+module.exports.f_console_get_count_alerts = f_console_get_count_alerts;
+module.exports.f_console_get_count_errors = f_console_get_count_errors;
+module.exports.f_console_get_count_warnings = f_console_get_count_warnings;
+module.exports.f_console_indent = f_console_indent;
+module.exports.f_console_info = f_console_info;
+module.exports.f_console_inspect = f_console_inspect;
+module.exports.f_console_lib_self_test = f_console_lib_self_test;
+module.exports.f_console_progress = f_console_progress;
+module.exports.f_console_reset = f_console_reset;
+module.exports.f_console_security_issue = f_console_security_issue;
+module.exports.f_console_separator = f_console_separator;
+module.exports.f_console_start = f_console_start;
+module.exports.f_console_stop = f_console_stop;
+module.exports.f_console_unindent = f_console_unindent;
+module.exports.f_console_usage = f_console_usage;
+module.exports.f_console_warning = f_console_warning;
